@@ -1,0 +1,12 @@
+[project]
+name = "applied-gen-ai"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.116.2",
+    "jupyter>=1.1.1",
+    "pydantic>=2.11.9",
+    "uvicorn>=0.35.0",
+]
