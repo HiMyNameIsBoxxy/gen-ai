@@ -30,3 +30,4 @@ def read_root():
 def generate_text(request: TextGenerationRequest):
     generated_text = bigram_model.generate_text(request.start_word, request.length)
     return {"generated_text": generated_text}
+
