@@ -1,19 +1,20 @@
+# main.py
 # Start command is: uv run uvicorn app.main:app --reload
 # http://127.0.0.1:8000/docs for documentation
 
 from typing import Union
 from fastapi import FastAPI
 from pydantic import BaseModel
-from app.bigram_model import bigram_model as BigramModel
+from app.bigram_model import BigramModel
 app = FastAPI()
 
 # Sample corpus for the bigram model
 corpus = [
-"The Count of Monte Cristo is a novel written by Alexandre Dumas. \
-It tells the story of Edmond Dantès, who is falsely imprisoned and later seeks revenge.",
-"this is another example sentence",
-"we are generating text based on bigram probabilities",
-"bigram models are simple but effective"
+    "The Count of Monte Cristo is a novel written by Alexandre Dumas. \
+    It tells the story of Edmond Dantès, who is falsely imprisoned and later seeks revenge.",
+    "this is another example sentence",
+    "we are generating text based on bigram probabilities",
+    "bigram models are simple but effective"
 ]
 
 bigram_model = BigramModel(corpus)
