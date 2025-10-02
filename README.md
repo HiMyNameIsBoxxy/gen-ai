@@ -1,8 +1,14 @@
 # Bigram Text Generation API (FastAPI + Docker)
 
-This project provides a FastAPI-based API that runs a **Bigram Language Model**.  
-The API can generate text sequences given a starting word and desired length.  
-It is containerized with Docker so it can be run on any machine without extra setup.
+
+This project provides a FastAPI-based API that runs a **Bigram Language Model** & **spaCy**.  
+
+**Bigram Language Model**
+- Generates word sequences given a starting word and a desired length.
+
+**spaCy**
+- Adds functionality to compute semantic embeddings of text using the en_core_web_md model
+
 
 ---
 
@@ -13,7 +19,13 @@ It is containerized with Docker so it can be run on any machine without extra se
 ---
 
 ## Build the Docker Image
-Clone this repository and from the root project directory run:
+Clone this repository and start your Docker.
+```bash
+git clone https://github.com/HiMyNameIsBoxxy/bigram_model.git
+cd bigram_model
+```
+
+From the root project directory, build the docker image:
 
 ```bash
 docker build -t gen-ai .

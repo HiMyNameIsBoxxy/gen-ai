@@ -28,5 +28,5 @@ COPY ./app /code/app
 # Command to run the application
 CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
-
+# Do this to start:
 # docker run -p 8000:80 gen-ai
