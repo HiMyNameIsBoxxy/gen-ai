@@ -1,13 +1,16 @@
-# Bigram Text Generation API (FastAPI + Docker)
+# Convolutional Neural Network Image Classifier (FastAPI + Docker)
 
 
-This project provides a FastAPI-based API that runs a **Bigram Language Model** & **spaCy**.  
+This project provides a FastAPI-based API that runs:  
 
 **Bigram Language Model**
 - Generates word sequences given a starting word and a desired length.
 
 **spaCy**
 - Adds functionality to compute semantic embeddings of text using the en_core_web_md model
+
+**Convolutional Neural Network (CNN)**
+- A trained CNN (on CIFAR-10) predicts the class of uploaded images (e.g., cat, dog, airplane, etc.).
 
 
 ---
