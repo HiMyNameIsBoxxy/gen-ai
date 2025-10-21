@@ -31,6 +31,9 @@ COPY ./helper_lib /code/helper_lib
 # Copy trained CNN weights
 COPY ./cnn_weights.pth /code/
 
+# Copy trained GAN weights
+COPY ./gan_weights.pth /code/
+
 # Expose port
 EXPOSE 8000
 
