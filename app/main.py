@@ -4,11 +4,16 @@ from pydantic import BaseModel
 from app.bigram_model import BigramModel
 import spacy
 import torch
+from io import BytesIO
+import matplotlib.pyplot as plt
+from torchvision.utils import make_grid
+from fastapi.responses import Response
 
 # Import helper_lib modules
 from helper_lib.data_loader import get_data_loaders
 from helper_lib.model import EnhancedCNN
 from helper_lib.utils import get_device, set_seed, preprocess_image, CLASSES
+from helper_lib.model import get_model
 
 app = FastAPI()
 
@@ -79,6 +84,40 @@ async def predict_cnn(file: UploadFile = File(...)):
         confidence = probs[0][pred_idx].item()
 
     return {"class": CLASSES[pred_idx], "confidence": confidence}
+
+
+
+# ------------------------------
+# GAN Model Setup
+# ------------------------------
+gan_model = get_model("GAN").to(device)
+
+@app.on_event("startup")
+def load_gan():
+    global gan_model
+    checkpoint = torch.load("gan_weights.pth", map_location=device)
+    gan_model.generator.load_state_dict(checkpoint["generator_state_dict"])
+    gan_model.generator.to(device)
+    gan_model.generator.eval()
+    print("GAN model loaded.")
+
+@app.get("/generate_gan", response_class=Response)
+# Generate handwritten digits using the trained GAN model.
+def generate_gan(num: int = 16):
+    with torch.no_grad():
+        z = torch.randn(num, 100, device=device)
+        fake_imgs = gan_model.generator(z).cpu()
+
+    grid = make_grid(fake_imgs, nrow=int(num**0.5), normalize=True, value_range=(-1, 1))
+    plt.figure(figsize=(6, 6))
+    plt.imshow(grid.permute(1, 2, 0))
+    plt.axis("off")
+
+    buf = BytesIO()
+    plt.savefig(buf, format="png", bbox_inches="tight", pad_inches=0)
+    plt.close()
+    buf.seek(0)
+    return Response(content=buf.read(), media_type="image/png")
 
 
 # ------------------------------

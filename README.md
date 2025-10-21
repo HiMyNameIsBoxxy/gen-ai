@@ -1,4 +1,4 @@
-# Convolutional Neural Network Image Classifier (FastAPI + Docker)
+# Generative Models (FastAPI + Docker)
 
 
 This project provides a FastAPI-based API that runs:  
@@ -12,6 +12,8 @@ This project provides a FastAPI-based API that runs:
 **Convolutional Neural Network (CNN)**
 - A trained CNN (on CIFAR-10) predicts the class of uploaded images (e.g., cat, dog, airplane, etc.).
 
+**Generative Adversarial Network (GAN)**
+- Trained on MNIST to generate realistic handwritten digits.
 
 ---
 
@@ -24,8 +26,8 @@ This project provides a FastAPI-based API that runs:
 ## Build the Docker Image
 Clone this repository and start your Docker.
 ```bash
-git clone https://github.com/HiMyNameIsBoxxy/bigram_model.git
-cd bigram_model
+git clone https://github.com/HiMyNameIsBoxxy/gen-ai.git
+cd gen-ai
 ```
 
 From the root project directory, build the docker image:
