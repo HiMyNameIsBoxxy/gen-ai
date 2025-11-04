@@ -34,6 +34,12 @@ COPY ./cnn_weights.pth /code/
 # Copy trained GAN weights
 COPY ./gan_weights.pth /code/
 
+# Copy trained Diffusion weights
+COPY ./diffusion_weights.pth /code/
+
+# Copy trained EBM weights
+COPY ./ebm_weights.pth /code/
+
 # Expose port
 EXPOSE 8000
 

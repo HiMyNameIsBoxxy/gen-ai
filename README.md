@@ -1,20 +1,43 @@
 # Generative Models (FastAPI + Docker)
 
+This project provides a FastAPI-based API that runs multiple deep learning models for both **text** and **image generation**, all containerized with Docker for easy deployment.
 
-This project provides a FastAPI-based API that runs:  
+---
 
-**Bigram Language Model**
-- Generates word sequences given a starting word and a desired length.
+## 🧩 Available Models
 
-**spaCy**
-- Adds functionality to compute semantic embeddings of text using the en_core_web_md model
+### Bigram Language Model
+- Generates word sequences based on bigram probabilities.
+- Simple yet effective demonstration of probabilistic language modeling.
+- Endpoint: `/generate`
 
-**Convolutional Neural Network (CNN)**
-- A trained CNN (on CIFAR-10) predicts the class of uploaded images (e.g., cat, dog, airplane, etc.).
+### spaCy Embeddings
+- Computes semantic embeddings of text using the **`en_core_web_md`** model.
+- Useful for similarity search or NLP preprocessing tasks.
+- Endpoint: `/embed`
 
-**Generative Adversarial Network (GAN)**
-- Trained on MNIST to generate realistic handwritten digits.
+### Convolutional Neural Network (CNN)
+- A trained **CNN on CIFAR-10** predicts the class of uploaded images.
+- Accepts `.jpg` / `.png` image files.
+- Returns the predicted class label and confidence score.
+- Endpoint: `/predict_cnn`
 
+### Generative Adversarial Network (GAN)
+- Trained on **MNIST** to generate realistic handwritten digits.
+- Generates a grid of digits from random noise input.
+- Endpoint: `/generate_gan`
+
+### Diffusion Model
+- Trained on **CIFAR-10-like** data to perform **denoising diffusion probabilistic modeling**.
+- Generates high-quality, diverse images by progressively denoising random noise.
+- Uses a learned noise scheduler and reverse diffusion sampling.
+- Endpoint: `/generate_diffusion`
+
+### Energy-Based Model (EBM)
+- Trained on grayscale **CIFAR-10-like** images using an **energy function** that scores image realism.
+- Uses **Langevin dynamics sampling** to iteratively generate new samples.
+- Unlike GANs or VAEs, EBMs don’t have a direct generator; instead, they refine noise via energy gradients.
+- Endpoint: `/generate_ebm`
 ---
 
 ## Requirements

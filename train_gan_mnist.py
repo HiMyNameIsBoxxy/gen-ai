@@ -1,7 +1,7 @@
 import torch
 from helper_lib.model import get_model
 from helper_lib.trainer import train_gan
-from helper_lib.mnist_loader import get_mnist_loader
+from helper_lib.data_loader import get_mnist_loader
 
 if __name__ == "__main__":
     # Detect device
