@@ -1,4 +1,5 @@
 import torch
+import os
 import torch.nn as nn
 import torch.optim as optim
 from tqdm import tqdm
@@ -113,3 +114,116 @@ def train_gan(model, data_loader, criterion=None, optimizer=None, device='cuda',
 
     print("GAN training complete and model saved.")
     return model
+
+
+
+# Diffusion Model Training Function (on CIFAR-10-style images)
+def train_diffusion(model, train_loader, val_loader, criterion, optimizer, device='cpu', epochs=10):
+    model.to(device)
+
+    for epoch in range(epochs):
+        model.train()
+        train_losses = []
+
+        for images, _ in tqdm(train_loader, desc=f"Epoch {epoch+1}/{epochs} [Train]", ncols=120):
+            images = images.to(device)
+            loss = model.train_step(images, optimizer, criterion)
+            train_losses.append(loss)
+
+        avg_train_loss = sum(train_losses) / len(train_losses)
+
+        # ---- Validation Loop ----
+        model.eval()
+        val_losses = []
+        with torch.no_grad():
+            for images, _ in tqdm(val_loader, desc=f"Epoch {epoch+1}/{epochs} [Val]", ncols=120):
+                images = images.to(device)
+                loss = model.test_step(images, criterion)
+                val_losses.append(loss)
+
+        avg_val_loss = sum(val_losses) / len(val_losses)
+        print(f"Epoch {epoch+1} | Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f}")
+
+    # Save the full Diffusion model (wrapper + EMA)
+    torch.save(model.state_dict(), "diffusion_weights.pth")
+    print("Training complete. Full Diffusion model saved as diffusion_weights.pth")
+
+    return model
+
+
+# -------------------------------------------------------
+# Energy-Based Model (EBM) Trainer
+# -------------------------------------------------------
+import torch
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+
+@torch.no_grad()
+def clip_img(x):
+    return torch.clamp((x + 1) / 2, 0, 1)  # scale from [-1,1] → [0,1]
+
+def plot_samples(samples, n=8):
+    samples = clip_img(samples)
+    samples = samples.cpu()
+    fig, axes = plt.subplots(1, n, figsize=(n * 2, 2))
+    for i in range(n):
+        img = samples[i].permute(1, 2, 0).squeeze()
+        axes[i].imshow(img, cmap='gray' if img.ndim == 2 else None)
+        axes[i].axis("off")
+    plt.show()
+
+def train_ebm(model, train_loader, optimizer, device='cuda', epochs=10, sample_interval=2):
+    """
+    Trains an Energy-Based Model (EBM).
+    Args:
+        model: instance of EBM wrapper class.
+        train_loader: DataLoader for training images.
+        optimizer: torch optimizer (usually Adam).
+        device: 'cuda' or 'cpu'.
+        epochs: number of epochs.
+        sample_interval: how often (in epochs) to generate and show samples.
+    """
+    model.to(device)
+
+    print("Starting Energy-Based Model training...")
+    for epoch in range(epochs):
+        model.train()
+        model.reset_metrics()
+
+        loop = tqdm(train_loader, desc=f"Epoch {epoch+1}/{epochs} [Train]", ncols=120)
+        for real_imgs, _ in loop:
+            real_imgs = real_imgs.to(device)
+
+            # --- One training step ---
+            metrics = model.train_step(real_imgs, optimizer)
+
+            loop.set_postfix({
+                "Loss": f"{metrics['loss']:.3f}",
+                "CDiv": f"{metrics['cdiv']:.3f}",
+                "Reg": f"{metrics['reg']:.3f}"
+            })
+
+        # --- Log average metrics for the epoch ---
+        epoch_metrics = model.metrics()
+        print(
+            f"\nEpoch {epoch+1} Summary → "
+            f"Loss: {epoch_metrics['loss']:.4f}, "
+            f"CDiv: {epoch_metrics['cdiv']:.4f}, "
+            f"Reg: {epoch_metrics['reg']:.4f}, "
+            f"Real: {epoch_metrics['real']:.4f}, "
+            f"Fake: {epoch_metrics['fake']:.4f}"
+        )
+
+        # --- Visualization every few epochs ---
+        if (epoch + 1) % sample_interval == 0:
+            print("Generating sample images...")
+            with torch.no_grad():
+                # Sample images from the replay buffer
+                fake_imgs = model.buffer.sample_new_exmps(
+                    steps=model.steps, step_size=model.step_size, noise=model.noise
+                )
+                plot_samples(fake_imgs, n=8)
+
+    # --- Save model weights ---
+    torch.save(model.model.state_dict(), "ebm_weights.pth")
+    print("EBM training complete. Model saved as ebm_weights.pth")

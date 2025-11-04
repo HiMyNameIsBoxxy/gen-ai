@@ -15,6 +15,19 @@ from helper_lib.model import EnhancedCNN
 from helper_lib.utils import get_device, set_seed, preprocess_image, CLASSES
 from helper_lib.model import get_model
 
+# diffusion model import
+from helper_lib.model import Diffusion, UNet, cosine_diffusion_schedule
+from io import BytesIO
+import matplotlib.pyplot as plt
+from torchvision.utils import make_grid
+from fastapi.responses import Response
+import torch
+
+# emb import
+from helper_lib.model import get_model
+from helper_lib.trainer import clip_img
+import torch.nn.functional as F
+
 app = FastAPI()
 
 # ------------------------------
@@ -117,6 +130,98 @@ def generate_gan(num: int = 16):
     plt.savefig(buf, format="png", bbox_inches="tight", pad_inches=0)
     plt.close()
     buf.seek(0)
+    return Response(content=buf.read(), media_type="image/png")
+
+
+# ------------------------------
+# Diffusion Model Setup
+# ------------------------------
+
+# Initialize Diffusion model
+base_model = UNet(image_size=32, num_channels=3)
+diffusion_model = Diffusion(base_model, cosine_diffusion_schedule).to(device)
+
+@app.on_event("startup")
+def load_diffusion():
+    global diffusion_model
+    checkpoint_path = "diffusion_weights.pth"
+    diffusion_model.load_state_dict(torch.load(checkpoint_path, map_location=device))
+    diffusion_model.to(device)
+    diffusion_model.eval()
+    print("Diffusion model loaded successfully.")
+
+@app.get("/generate_diffusion", response_class=Response)
+def generate_diffusion(num: int = 16):
+    """
+    Generate samples from the trained Diffusion model.
+    Returns a PNG image grid of generated CIFAR-10-like images.
+    """
+    diffusion_model.eval()
+    with torch.no_grad():
+        samples = diffusion_model.sample(n=num, device=device).cpu()
+
+    # Arrange samples in grid
+    grid = make_grid(
+        samples,
+        nrow=int(num ** 0.5),
+        normalize=False,
+        pad_value=1
+    )
+
+    # Convert to image buffer
+    plt.figure(figsize=(6, 6))
+    plt.imshow(grid.permute(1, 2, 0))
+    plt.axis("off")
+
+    buf = BytesIO()
+    plt.savefig(buf, format="png", bbox_inches="tight", pad_inches=0)
+    plt.close()
+    buf.seek(0)
+
+    return Response(content=buf.read(), media_type="image/png")
+
+# ------------------------------
+# Energy-Based Model (EBM) Setup
+# ------------------------------
+
+ebm_model = get_model("EBM").to(device)
+
+@app.on_event("startup")
+def load_ebm():
+    global ebm_model
+    checkpoint_path = "ebm_weights.pth"
+    ebm_model.model.load_state_dict(torch.load(checkpoint_path, map_location=device))
+    ebm_model.to(device)
+    ebm_model.eval()
+    print("EBM model loaded successfully.")
+
+@app.get("/generate_ebm", response_class=Response)
+def generate_ebm(num: int = 16):
+    """
+    Generate samples using the trained Energy-Based Model (EBM).
+    Returns a PNG image grid of grayscale CIFAR-10-like images.
+    """
+    ebm_model.eval()
+    with torch.no_grad():
+        samples = ebm_model.sample(n=num).cpu()  # Uses the Langevin sampler method
+
+    # Create grid of images
+    grid = make_grid(
+        samples,
+        nrow=int(num ** 0.5),
+        normalize=True,
+        pad_value=1
+    )
+
+    plt.figure(figsize=(6, 6))
+    plt.imshow(grid.permute(1, 2, 0), cmap="gray")
+    plt.axis("off")
+
+    buf = BytesIO()
+    plt.savefig(buf, format="png", bbox_inches="tight", pad_inches=0)
+    plt.close()
+    buf.seek(0)
+
     return Response(content=buf.read(), media_type="image/png")
 
 
