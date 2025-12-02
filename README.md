@@ -4,7 +4,7 @@ This project provides a FastAPI-based API that runs multiple deep learning model
 
 ---
 
-## 🧩 Available Models
+## Available Models
 
 ### Bigram Language Model
 - Generates word sequences based on bigram probabilities.
@@ -38,6 +38,23 @@ This project provides a FastAPI-based API that runs multiple deep learning model
 - Uses **Langevin dynamics sampling** to iteratively generate new samples.
 - Unlike GANs or VAEs, EBMs don’t have a direct generator; instead, they refine noise via energy gradients.
 - Endpoint: `/generate_ebm`
+
+
+### Fine-Tuned LLM (GPT-2)
+This project includes a **custom fine-tuned GPT-2 model**, trained on a question–answer dataset (Nectar).  
+Two versions of the model are provided:
+
+1. **Supervised Fine-Tuned GPT-2 (`finetuned_gpt2`)**  
+   - Trained to perform basic question answering by predicting next tokens on QA-formatted text.
+
+2. **RL-Fine-Tuned GPT-2 (`finetuned_gpt2_rl`)**  
+   - Further optimized via a simplified REINFORCE reinforcement learning loop.  
+   - Encouraged to output responses following a target format (e.g.,  
+     “**That is a great question… let me know if you have any other questions.**”).
+
+The API loads the RL-trained version (`finetuned_gpt2_rl`) by default using an `LLMGenerator` helper class.
+
+
 ---
 
 ## Requirements
