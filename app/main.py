@@ -17,16 +17,14 @@ from helper_lib.model import get_model
 
 # diffusion model import
 from helper_lib.model import Diffusion, UNet, cosine_diffusion_schedule
-from io import BytesIO
-import matplotlib.pyplot as plt
-from torchvision.utils import make_grid
-from fastapi.responses import Response
 import torch
 
 # emb import
-from helper_lib.model import get_model
 from helper_lib.trainer import clip_img
 import torch.nn.functional as F
+
+# llm import
+from helper_lib.llm_inference import LLMGenerator 
 
 app = FastAPI()
 
@@ -225,9 +223,27 @@ def generate_ebm(num: int = 16):
     return Response(content=buf.read(), media_type="image/png")
 
 
+
 # ------------------------------
+# LLM Model Setup
+# ------------------------------
+llm = LLMGenerator("finetuned_gpt2_rl")
+
+@app.post("/generate_with_llm")
+def generate_with_llm(request: TextGenerationRequest):
+    """
+    Generate text using the fine-tuned or RL-trained GPT-2 model.
+    """
+    output = llm.generate(
+        request.start_word,
+        max_length=request.length
+    )
+
+    return {"generated_text": output}
+
+
+
 # Root Endpoint
-# ------------------------------
 @app.get("/")
 def read_root():
     return {"Hello": "World"}

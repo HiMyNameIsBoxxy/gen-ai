@@ -40,6 +40,10 @@ COPY ./diffusion_weights.pth /code/
 # Copy trained EBM weights
 COPY ./ebm_weights.pth /code/
 
+# Copy fine-tuned LLM folders
+COPY ./finetuned_gpt2 /code/finetuned_gpt2
+COPY ./finetuned_gpt2_rl /code/finetuned_gpt2_rl
+
 # Expose port
 EXPOSE 8000
 
